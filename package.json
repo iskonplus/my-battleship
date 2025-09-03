@@ -9,13 +9,13 @@
         "start:dev": "nodemon ./index.js",
         "test": "echo \"Error: no test specified\" && exit 1"
     },
-    "author": "Andrei Auchynnikau",
+    "author": "Artur Tamashevich",
     "keywords": [],
     "license": "ISC",
     "devDependencies": {
         "nodemon": "^2.0.16"
     },
     "dependencies": {
-        "ws": "^8.8.0"
+        "ws": "^8.18.3"
     }
 }
