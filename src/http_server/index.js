@@ -2,6 +2,8 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
 import { WebSocketServer } from 'ws';
+import { handleReg } from './handlers.js';
+import { sendJson, stamp } from './utils.js';
 
 export const httpServer = http.createServer(function (req, res) {
     const __dirname = path.resolve(path.dirname(''));
@@ -20,61 +22,60 @@ export const httpServer = http.createServer(function (req, res) {
 const wss = new WebSocketServer({ noServer: true });
 
 httpServer.on('upgrade', (req, socket, head) => {
-  wss.handleUpgrade(req, socket, head, (ws) => {
-    wss.emit('connection', ws, req);
-  });
+    wss.handleUpgrade(req, socket, head, (ws) => {
+        wss.emit('connection', ws, req);
+    });
 });
 
-const stamp = () => new Date().toISOString();
-
-const sendJson = (ws, payload) => {
-  if (ws.readyState === ws.OPEN) {
-    ws.send(JSON.stringify(payload));
-  }
-};
 
 wss.on('connection', (ws) => {
-  console.log(`[${stamp()}] WS connected`);
+    console.log(`[${stamp()}] WS connected`);
 
-  ws.on('message', (message) => {
-    let msg;
-    try {
-      msg = JSON.parse(message.toString());
-    } catch {
-      const errRes = {
-        type: 'error',
-        data: { error: true, errorText: 'Invalid JSON' },
-        id: 0,
-      };
-      console.log(`[${stamp()}] <= (invalid json)`, message.toString());
-      console.log(`[${stamp()}] ->`, errRes);
-      return sendJson(ws, errRes);
-    }
+    ws.on('message', (message) => {
 
-    console.log(`[${stamp()}] <=`, msg);
+        let msg, data;
+        try {
+            msg = JSON.parse(message.toString());
+            data = JSON.parse(msg.data.toString());
+        } catch {
+            const errRes = {
+                type: 'error',
+                data: { error: true, errorText: 'Invalid JSON' },
+                id: 0,
+            };
+            console.log(`[${stamp()}] <= (invalid json)`, message.toString());
+            console.log(`[${stamp()}] ->`, errRes);
+            return sendJson(ws, errRes);
+        }
 
-    const res = {
-      type: msg.type,
-      data:  msg.data ,
-      id: 0,
-    };
-      
-    console.log(`[${stamp()}] ->`, res);
-    sendJson(ws, res);
-  });
 
-  ws.on('close', () => {
-    console.log(`[${stamp()}] WS closed`);
-  });
+        console.log(`[${stamp()}] <=`, msg);
+
+
+        switch (msg.type) {
+            case "reg":
+                return handleReg(ws, data);
+            default:
+                return sendJson(ws, { type, data, id: 0 });
+        }
+
+        
+    });
+
+
+
+    ws.on('close', () => {
+        console.log(`[${stamp()}] WS closed`);
+    });
 });
 
 
 function shutdown() {
-  console.log('Shutting down…');
-  for (const client of wss.clients) {
-    try { client.close(1001, 'Server shutting down'); } catch {}
-  }
-  httpServer.close(() => process.exit(0));
+    console.log('Shutting down…');
+    for (const client of wss.clients) {
+        try { client.close(1001, 'Server shutting down'); } catch { }
+    }
+    httpServer.close(() => process.exit(0));
 }
 
 process.on('SIGINT', shutdown);
