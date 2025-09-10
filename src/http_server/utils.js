@@ -16,10 +16,10 @@ export const sendJson = (ws, payload) => {
 };
 
 export function createRoom(user) {
-  const room = {
-    roomId: crypto.randomUUID(), 
-    roomUsers: [{ name: user.name, index: user.index }]
-  };
-  rooms.push(room);
-  return room;
+    const room = {
+        roomId: crypto.randomUUID(),
+        roomUsers: [{ name: user.name, index: user.index }]
+    };
+    rooms.push(room);
+    return room;
 }

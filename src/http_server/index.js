@@ -55,7 +55,7 @@ wss.on('connection', (ws) => {
             case "reg":
                 return handleReg(ws, msg);
             case "create_room":
-                return handleCreateRoom(ws, ws.user);
+                return handleCreateRoom(ws, wss);
             default:
                 return sendJson(ws, { type, msg, id: 0 });
         }
