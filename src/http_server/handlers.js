@@ -1,4 +1,4 @@
-import { stamp, sendJson, createUser, createRoom } from './utils.js';
+import { stamp, sendJson, createUser, createRoom, getRandomUUID } from './utils.js';
 import { users, rooms } from './db.js';
 
 
@@ -51,4 +51,15 @@ export const handleCreateRoom = (ws, wss) => {
     console.log(`[${stamp()}] ->`, okRes);
 
     wss.clients?.forEach(client => sendJson(client, okRes));
+}
+
+export const handleSinglePlay = ws => {
+    const okRes = {
+        type: "create_game",
+        data: JSON.stringify({ idGame: getRandomUUID(), idPlayer: getRandomUUID() }),
+        id: 0,
+    };
+
+    console.log(`[${stamp()}] ->`, okRes);
+    sendJson(ws, okRes);
 }
