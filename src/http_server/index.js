@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
 import { WebSocketServer } from 'ws';
-import { handleReg } from './handlers.js';
+import { handleReg, handleCreateRoom } from './handlers.js';
 import { sendJson, stamp } from './utils.js';
 
 export const httpServer = http.createServer(function (req, res) {
@@ -33,33 +33,34 @@ wss.on('connection', (ws) => {
 
     ws.on('message', (message) => {
 
-        let msg, data;
+        let msg;
+
         try {
             msg = JSON.parse(message.toString());
-            data = JSON.parse(msg.data.toString());
         } catch {
             const errRes = {
                 type: 'error',
                 data: { error: true, errorText: 'Invalid JSON' },
                 id: 0,
             };
-            console.log(`[${stamp()}] <= (invalid json)`, message.toString());
+            console.log(`[${stamp()}] <= (invalid json)`, msg);
             console.log(`[${stamp()}] ->`, errRes);
             return sendJson(ws, errRes);
         }
-
 
         console.log(`[${stamp()}] <=`, msg);
 
 
         switch (msg.type) {
             case "reg":
-                return handleReg(ws, data);
+                return handleReg(ws, msg);
+            case "create_room":
+                return handleCreateRoom(ws, ws.user);
             default:
-                return sendJson(ws, { type, data, id: 0 });
+                return sendJson(ws, { type, msg, id: 0 });
         }
 
-        
+
     });
 
 
