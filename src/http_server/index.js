@@ -2,7 +2,7 @@ import * as fs from 'fs';
 import * as path from 'path';
 import * as http from 'http';
 import { WebSocketServer } from 'ws';
-import { handleReg, handleCreateRoom, handleSinglePlay } from './handlers.js';
+import { handleReg, handleCreateRoom, handleSinglePlay, handleAddShips, handleAddUserToRoom } from './handlers.js';
 import { sendJson, stamp } from './utils.js';
 
 export const httpServer = http.createServer(function (req, res) {
@@ -50,7 +50,6 @@ wss.on('connection', (ws) => {
 
         console.log(`[${stamp()}] <=`, msg);
 
-
         switch (msg.type) {
             case "reg":
                 return handleReg(ws, msg);
@@ -58,11 +57,13 @@ wss.on('connection', (ws) => {
                 return handleCreateRoom(ws, wss);
             case "single_play":
                 return  handleSinglePlay(ws);
+            case "add_ships":
+                return  handleAddShips(ws);
+            case "add_user_to_room":
+                return  handleAddUserToRoom(ws, msg);
             default:
                 return sendJson(ws, { type, msg, id: 0 });
         }
-
-
     });
 
 
