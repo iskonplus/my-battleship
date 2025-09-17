@@ -60,7 +60,7 @@ wss.on('connection', (ws) => {
             case "add_ships":
                 return  handleAddShips(ws);
             case "add_user_to_room":
-                return  handleAddUserToRoom(ws, msg);
+                return  handleAddUserToRoom(wss, ws, msg);
             default:
                 return sendJson(ws, { type, msg, id: 0 });
         }

@@ -1,4 +1,4 @@
-import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom, getPublicRooms } from './utils.js';
+import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom, getPublicRooms, broadcastUpdateRoom } from './utils.js';
 import { users, rooms } from './db.js';
 
 
@@ -53,7 +53,7 @@ export const handleCreateRoom = (ws, wss) => {
     wss.clients?.forEach(client => sendJson(client, okRes));
 }
 
-export const handleAddUserToRoom = (ws, msg) => {
+export const handleAddUserToRoom = (wss, ws, msg) => {
     const { indexRoom } = JSON.parse(msg.data.toString()) || {};
     const room = rooms.find(room => room.roomId === indexRoom);
     const user = ws.user;
@@ -113,6 +113,8 @@ export const handleAddUserToRoom = (ws, msg) => {
         console.log(`[${stamp()}] -> ${player.name} in game`, okRes);
         sendJson(player.ws, okRes);
     }
+
+    broadcastUpdateRoom(wss);
 
 }
 
