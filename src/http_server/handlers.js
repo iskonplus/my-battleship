@@ -39,7 +39,7 @@ export const handleCreateRoom = (ws, wss) => {
         });
     }
 
-    const room = createRoom();
+    const room = createRoom(user, ws);
     console.log(`[${stamp()}] -> Created room ${room.roomId} by ${user.name}`);
 
     const okRes = {
@@ -53,24 +53,10 @@ export const handleCreateRoom = (ws, wss) => {
     wss.clients?.forEach(client => sendJson(client, okRes));
 }
 
-export const handleSinglePlay = ws => {
-    const idGame = getRandomUUID();
-    const idPlayer = getRandomUUID();
-    const idBot = getRandomUUID();
-
-    const okRes = {
-        type: "create_game",
-        data: JSON.stringify({ idGame, idPlayer }),
-        id: 0,
-    };
-
-    console.log(`[${stamp()}] ->`, okRes);
-    sendJson(ws, okRes);
-}
-
 export const handleAddUserToRoom = (ws, msg) => {
     const { indexRoom } = JSON.parse(msg.data.toString()) || {};
     const room = rooms.find(room => room.roomId === indexRoom);
+    const user = ws.user;
 
     const errRes = {
         type: 'error',
@@ -91,39 +77,60 @@ export const handleAddUserToRoom = (ws, msg) => {
 
 
     const idGame = getRandomUUID();
+    let userInRoom = room.roomUsers.find(u => u.name === user.name);
 
-    console.log('>>>ws.activeUser.index>>>>', ws.user.index);
-    console.log('>>>>room>>>>>', room);
-    
-    addUserToRoom(ws.user, room.roomId)
+    if (userInRoom) {
+        errRes.data.errorText = 'User already in room';
+        console.log(`[${stamp()}] ->  User already in room`, room);
+        return sendJson(ws, errRes);
+    }
+
+    addUserToRoom(user, room.roomId, ws)
     const responseUpdateRoom = {
         type: "update_room",
         data: JSON.stringify(rooms),
         id: 0,
     }
-    
-    console.log(`[${stamp()}] =>  User added to room`, responseUpdateRoom);
+
+    console.log(`[${stamp()}] ->  User added to room`, responseUpdateRoom);
     sendJson(ws, responseUpdateRoom);
-    console.log('>>>>room>>>>>', room);
-    
-    // let responseDataStartGame = {
-    //     idGame,
-    //     idPlayer: ws.user.index,
-    // }
 
-    // let responseDataWaitingOpponent = { type: "waiting_for_opponent", data: { roomId: room.roomId }, "id": 0 }
+    let responseDataStartGame = {
+        idGame,
+        idPlayer: '',
+    }
 
-    // const okRes = {
-    //     type: "create_game",
-    //     data: JSON.stringify(room.roomUsers.length === 1 ? responseDataWaitingOpponent : responseDataStartGame),
-    //     id: 0,
-    // }
+    const okRes = {
+        type: "create_game",
+        data: "",
+        id: 0,
+    }
 
-    // console.log(`[${stamp()}] =>  User in game`, okRes);
-    // sendJson(ws, okRes);
+
+    for (const player of room.roomUsers) {
+        responseDataStartGame.idPlayer = getRandomUUID();
+        okRes.data = JSON.stringify(responseDataStartGame);
+        console.log(`[${stamp()}] -> ${player.name} in game`, okRes);
+        sendJson(player.ws, okRes);
+    }
 
 }
 
 export const handleAddShips = ws => {
 
+}
+
+export const handleSinglePlay = ws => {
+    const idGame = getRandomUUID();
+    const idPlayer = getRandomUUID();
+    const idBot = getRandomUUID();
+
+    const okRes = {
+        type: "create_game",
+        data: JSON.stringify({ idGame, idPlayer }),
+        id: 0,
+    };
+
+    console.log(`[${stamp()}] ->`, okRes);
+    sendJson(ws, okRes);
 }
