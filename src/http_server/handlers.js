@@ -1,4 +1,4 @@
-import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom, getPublicRooms } from './utils.js';
+import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom, getPublicRooms, getPublicRoom } from './utils.js';
 import { users, rooms } from './db.js';
 
 
@@ -30,13 +30,26 @@ export const handleReg = (ws, msg) => {
 export const handleCreateRoom = (ws, wss) => {
     const user = ws.user;
 
+    const errRes = {
+        type: 'error',
+        data: { error: true, errorText: '' },
+        id: 0,
+    }
+
     if (!user) {
+        errRes.data.errorText = 'Not authorized (reg required)';
         console.log(`[${stamp()}] ->`, 'User is not authorized');
-        return sendJson(ws, {
-            type: 'error',
-            data: JSON.stringify({ error: true, errorText: 'Not authorized (reg required)' }),
-            id: 0,
-        });
+        return sendJson(ws, errRes);
+    }
+
+    const roomAlreadyCreated = rooms.some(
+        room => room.roomUsers.length === 1 && room.roomUsers[0].index === user.index
+    );
+
+    if (roomAlreadyCreated) {
+        errRes.data.errorText = 'User already created room';
+        console.log(`[${stamp()}] ->`, 'User already created room');
+        return sendJson(ws, errRes);
     }
 
     const room = createRoom(user, ws);
@@ -75,13 +88,12 @@ export const handleAddUserToRoom = (wss, ws, msg) => {
         return sendJson(ws, errRes);
     }
 
-
     const idGame = getRandomUUID();
     let userInRoom = room.roomUsers.find(u => u.index === user.index);
 
     if (userInRoom) {
         errRes.data.errorText = 'User already in room';
-        console.log(`[${stamp()}] ->  User already in room`, room);
+        console.log(`[${stamp()}] ->  User already in room`, getPublicRoom(room));
         return sendJson(ws, errRes);
     }
 

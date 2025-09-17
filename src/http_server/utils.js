@@ -41,11 +41,17 @@ export function addUserToRoom(user, id, ws) {
 
 export function getPublicRooms() {
         return rooms
-        .filter(r => r.roomUsers.length === 1)
-        .map(r => ({
-            roomId: r.roomId,
-            roomUsers: r.roomUsers.map(u => ({ name: u.name, index: u.index })),
+        .filter(room => room.roomUsers.length === 1)
+        .map(room => ({
+            roomId: room.roomId,
+            roomUsers: room.roomUsers.map(user => ({ name: user.name, index: user.index })),
         }));
+}
+export function getPublicRoom(room) {
+       return{
+            roomId: room.roomId,
+            roomUsers: room.roomUsers.map(user => ({ name: user.name, index: user.index })),
+        };
 }
 
 
