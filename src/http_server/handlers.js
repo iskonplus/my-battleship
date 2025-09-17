@@ -1,4 +1,4 @@
-import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom, getPublicRooms, broadcastUpdateRoom } from './utils.js';
+import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom, getPublicRooms } from './utils.js';
 import { users, rooms } from './db.js';
 
 
@@ -44,7 +44,7 @@ export const handleCreateRoom = (ws, wss) => {
 
     const okRes = {
         type: "update_room",
-        data: JSON.stringify(getPublicRooms(rooms)),
+        data: JSON.stringify(getPublicRooms()),
         id: 0,
     };
 
@@ -88,7 +88,7 @@ export const handleAddUserToRoom = (wss, ws, msg) => {
     addUserToRoom(user, room.roomId, ws)
     const responseUpdateRoom = {
         type: "update_room",
-        data: JSON.stringify(getPublicRooms(rooms)),
+        data: JSON.stringify(getPublicRooms()),
         id: 0,
     }
 
@@ -114,7 +114,17 @@ export const handleAddUserToRoom = (wss, ws, msg) => {
         sendJson(player.ws, okRes);
     }
 
-    broadcastUpdateRoom(wss);
+    ;
+
+    const actualRoomsResponse = {
+        type: 'update_room',
+        data: JSON.stringify(getPublicRooms()),
+        id: 0
+    };
+
+    wss?.clients?.forEach(client => {
+        sendJson(client, actualRoomsResponse);
+    });
 
 }
 

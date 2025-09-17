@@ -39,25 +39,14 @@ export function addUserToRoom(user, id, ws) {
     })
 }
 
-export function getPublicRooms(rooms) {
-    return rooms.map(room => ({
-        roomId: room.roomId,
-        roomUsers: room.roomUsers.map(user => ({ name: user.name, index: user.index }))
-    }))
-
-}
-
-export const broadcastUpdateRoom = (wss) => {
-    const payload = rooms
+export function getPublicRooms() {
+        return rooms
         .filter(r => r.roomUsers.length === 1)
         .map(r => ({
             roomId: r.roomId,
             roomUsers: r.roomUsers.map(u => ({ name: u.name, index: u.index })),
         }));
+}
 
-    const msg = { type: 'update_room', data: JSON.stringify(payload), id: 0 };
-    wss?.clients?.forEach(client => {
-        if (client.readyState === WebSocket.OPEN) sendJson(client, msg);
-    });
-};
+
 
