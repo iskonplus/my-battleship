@@ -1,4 +1,4 @@
-import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom } from './utils.js';
+import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom, getPublicRooms } from './utils.js';
 import { users, rooms } from './db.js';
 
 
@@ -44,7 +44,7 @@ export const handleCreateRoom = (ws, wss) => {
 
     const okRes = {
         type: "update_room",
-        data: JSON.stringify(rooms),
+        data: JSON.stringify(getPublicRooms(rooms)),
         id: 0,
     };
 
@@ -77,7 +77,7 @@ export const handleAddUserToRoom = (ws, msg) => {
 
 
     const idGame = getRandomUUID();
-    let userInRoom = room.roomUsers.find(u => u.name === user.name);
+    let userInRoom = room.roomUsers.find(u => u.index === user.index);
 
     if (userInRoom) {
         errRes.data.errorText = 'User already in room';
@@ -88,7 +88,7 @@ export const handleAddUserToRoom = (ws, msg) => {
     addUserToRoom(user, room.roomId, ws)
     const responseUpdateRoom = {
         type: "update_room",
-        data: JSON.stringify(rooms),
+        data: JSON.stringify(getPublicRooms(rooms)),
         id: 0,
     }
 

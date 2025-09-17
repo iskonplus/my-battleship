@@ -33,3 +33,11 @@ export function addUserToRoom(user, id, ws) {
         }
     })
 }
+
+export function getPublicRooms(rooms) {
+    return rooms.map(room => ({
+    roomId: room.roomId,
+    roomUsers: room.roomUsers.map(user => ({ name: user.name, index: user.index }))
+  }))
+    
+}
