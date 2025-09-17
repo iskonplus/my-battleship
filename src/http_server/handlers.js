@@ -1,4 +1,4 @@
-import { stamp, sendJson, createUser, createRoom, getRandomUUID } from './utils.js';
+import { stamp, sendJson, createUser, createRoom, getRandomUUID, addUserToRoom } from './utils.js';
 import { users, rooms } from './db.js';
 
 
@@ -39,8 +39,8 @@ export const handleCreateRoom = (ws, wss) => {
         });
     }
 
-    const room = createRoom(user);
-    console.log(`[${stamp()}] Created room ${room.roomId} by ${user.name}`);
+    const room = createRoom();
+    console.log(`[${stamp()}] -> Created room ${room.roomId} by ${user.name}`);
 
     const okRes = {
         type: "update_room",
@@ -94,22 +94,33 @@ export const handleAddUserToRoom = (ws, msg) => {
 
     console.log('>>>ws.activeUser.index>>>>', ws.user.index);
     console.log('>>>>room>>>>>', room);
-
-    let responseDataStartGame = {
-        idGame,
-        idPlayer: ws.user.index,
-    }
-
-    let responseDataWaitingOpponent = { type: "waiting_for_opponent", data: { roomId: room.roomId }, "id": 0 }
-
-    const okRes = {
-        type: "create_game",
-        data: JSON.stringify(room.roomUsers.length === 1 ? responseDataWaitingOpponent : responseDataStartGame),
+    
+    addUserToRoom(ws.user, room.roomId)
+    const responseUpdateRoom = {
+        type: "update_room",
+        data: JSON.stringify(rooms),
         id: 0,
     }
+    
+    console.log(`[${stamp()}] =>  User added to room`, responseUpdateRoom);
+    sendJson(ws, responseUpdateRoom);
+    console.log('>>>>room>>>>>', room);
+    
+    // let responseDataStartGame = {
+    //     idGame,
+    //     idPlayer: ws.user.index,
+    // }
 
-    console.log(`[${stamp()}] =>  User in game`, okRes);
-    sendJson(ws, okRes);
+    // let responseDataWaitingOpponent = { type: "waiting_for_opponent", data: { roomId: room.roomId }, "id": 0 }
+
+    // const okRes = {
+    //     type: "create_game",
+    //     data: JSON.stringify(room.roomUsers.length === 1 ? responseDataWaitingOpponent : responseDataStartGame),
+    //     id: 0,
+    // }
+
+    // console.log(`[${stamp()}] =>  User in game`, okRes);
+    // sendJson(ws, okRes);
 
 }
 

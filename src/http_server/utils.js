@@ -17,11 +17,25 @@ export const sendJson = (ws, payload) => {
     }
 };
 
-export function createRoom(user) {
+export function createRoom() {
     const room = {
         roomId: crypto.randomUUID(),
-        roomUsers: [{ name: user.name, index: user.index }]
+        roomUsers: []
     };
     rooms.push(room);
     return room;
+}
+
+export function addUserToRoom(user, id) {
+    rooms.forEach(room => {
+        if (room.roomId === id) {
+            room.roomUsers.push({ name: user.name, index: user.index })
+        }
+    })
+    // const room = {
+    //     roomId: crypto.randomUUID(),
+    //     roomUsers: [{ name: user.name, index: user.index }]
+    // };
+    // rooms.push(room);
+    // return room;
 }
