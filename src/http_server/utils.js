@@ -26,10 +26,10 @@ export function createRoom(user, ws) {
     return room;
 }
 
-export function addUserToRoom(user, id, ws) {
+export function addUserToRoom(user, id, ws, gameId) {
     rooms.forEach(room => {
         if (room.roomId === id) {
-            room.roomUsers.push({ name: user.name, index: user.index, ws })
+            room.roomUsers.push({ name: user.name, index: user.index, ws });
         }
     })
     rooms.forEach((room, index) => {
